@@ -1,35 +1,30 @@
+-- Thanks to Ubi, Schwarz, LRED and GOBJIuH for help --
+-- Made by Drafu --
+
 local ply = LocalPlayer()
 local DHack = {}
-DHack.FOV = 90
-DHack.Dist = 64000
-DHack.Bone = "ValveBiped.Bip01_Head1"
-DHack.AimEnabled = 1
+DHack.Bone = {}
+DHack.Bone.Head = "ValveBiped.Bip01_Head1"
+local scrw_center = ScrW()/2
+local scrh_center = ScrH()/2
+DHack.GetAll = {}
 
 surface.CreateFont("Trebuchet19", {font="TabLarge", size=12, weight=600})
 
-DHack.GetAll = player.GetAll()
+--DHack.GetAll = player.GetAll()
 
-local function SortGetAll()
-	for k, ply1 in pairs(DHack.GetAll) do
-		if ply1 == ply then table.remove(DHack.GetAll,k) continue end
-		
-		for k,ply2 in pairs(DHack.GetAll) do
-  			dist1 = ply1:GetPos():Distance(ply:GetPos())
-  			dist2 = ply2:GetPos():Distance(ply:GetPos())
-   			if dist1 > dist2 then
-    			ply1, ply2 = ply2, ply1
-			end
-		end
-	end
+for _, o in pairs(player.GetAll()) do 
+   if o == ply then continue end
+   DHack.GetAll[_] = o
 end
 
-hook.Add("Think", "DHackRefreshTable", function()
-	DHack.GetAll = player.GetAll()
-	SortGetAll()
+table.sort(DHack.GetAll, function(a,b)
+	local a_pos, b_pos = a:GetPos():ToScreen(), b:GetPos():ToScreen()
+	return (scrw_center - a_pos.x)^2 + (scrh_center - a_pos.y)^2 < (scrw_center - b_pos.x)^2 + (scrh_center - b_pos.y)^2
 end)
-	
+
 local function IsValidModel(ent)
-	if(ent:LookupBone("ValveBiped.Bip01_Head1") ~= nil and ent:GetBonePosition(ent:LookupBone("ValveBiped.Bip01_Head1")) ~= nil) then return true
+	if(ent:LookupBone(DHack.Bone.Head) ~= nil and ent:GetBonePosition(ent:LookupBone(DHack.Bone.Head)) ~= nil) then return true
 	else return false end
 end
 
@@ -38,7 +33,7 @@ local function IsVisible(ent)
 	if(ply:GetShootPos() ~= nil and IsValid(ent)) then
 		tracer.start = ply:GetShootPos()
 		if IsValidModel(ent) then
-			tracer.endpos = ent:GetBonePosition(ent:LookupBone("ValveBiped.Bip01_Head1"))
+			tracer.endpos = ent:GetBonePosition(ent:LookupBone(DHack.Bone.Head))
 		else
 			tracer.endpos = ent:GetPos()
 		end
@@ -50,12 +45,12 @@ local function IsVisible(ent)
 	end
 end
 
-hook.Add("Move", "DHackAim", function()
-	if(DHack.AimEnabled == 1 and ply:KeyDown(IN_ATTACK2)) then
+hook.Add("CreateMove", "DHackAim", function()
+	if(ply:KeyDown(IN_ATTACK2)) then
 		for k,v in pairs(DHack.GetAll) do
 			if(IsVisible(v)) then
 				if(IsValidModel(v)) then
-					local head = v:LookupBone("ValveBiped.Bip01_Head1")
+					local head = v:LookupBone(DHack.Bone.Head)
 					local headpos,targetheadang = v:GetBonePosition(head)
 					ply:SetEyeAngles((headpos - ply:GetShootPos()):Angle())
 				else
@@ -81,7 +76,7 @@ hook.Add("HUDPaint", "DHackESP", function()
 end)
 
 hook.Add("HUDPaint", "DHackChams", function()
-	for k,v in pairs(player.GetAll()) do
+	for k,v in pairs(DHack.GetAll) do
 			cam.Start3D(EyePos(), EyeAngles())
 				/*v:SetMaterial("models/debug/debugwhite")
 				v:SetColor(Color(20, 71, 244, 255))
@@ -100,7 +95,7 @@ hook.Add("HUDPaint", "DHackChams", function()
 end)
 
 hook.Add("HUDPaint", "DHackGlowPly", function()
-	for k,v in pairs(player.GetAll()) do
+	for k,v in pairs(DHack.GetAll) do
 			halo.Add({v}, team.GetColor(v:Team()), 1, 1, 5, true, true)
 	end
 end)
