@@ -48,7 +48,7 @@ local function IsVisible(ent)
 end
 
 hook.Add("Move", "DHackAim", function()
-	if(ply:KeyDown(IN_ATTACK2)) then
+	if(ply:KeyDown(IN_ALT2)) then
 		for k,v in pairs(DHack.GetAll) do
 			if(IsVisible(v)) then
 				if(IsValidModel(v)) then
@@ -70,9 +70,11 @@ hook.Add("HUDPaint", "DHackESP", function()
 			draw.DrawText(v:Name(), "Trebuchet19", ESP.x, ESP.y -46, team.GetColor(v:Team()), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 			draw.DrawText("Team: "..team.GetName(v:Team()), "Trebuchet19", ESP.x, ESP.y -23, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 			draw.DrawText("Health: " .. v:Health(), "Trebuchet19", ESP.x, ESP.y -34, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+			
 			if(v:GetActiveWeapon():IsValid()) then
 				draw.DrawText("Weapon: " .. v:GetActiveWeapon():GetClass(), "Trebuchet19", ESP.x, ESP.y -12, Color(255, 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 			end
+			-- as long as we see halo of weapon, it may be useless
 		end
 	end
 end)
@@ -96,7 +98,7 @@ hook.Add("HUDPaint", "DHackGlow", function()
 	end
 		
 	for k,v in pairs(ents.GetAll()) do
-		if v:GetPos():Distance(ply:GetPos()) < 2500 then
+		if v:GetPos():Distance(ply:GetPos()) < 16000 then
 			if
 				string.find(v:GetClass(), "weapon") or 
 				string.find(v:GetClass(), "gun")
@@ -111,9 +113,11 @@ hook.Add("HUDPaint", "DHackGlow", function()
 				string.find(v:GetClass(), "spawned") or 
 				string.find(v:GetClass(), "microwave") or
 				string.find(v:GetClass(), "darkrp") or 
-				string.find(v:GetClass(), "sent")
+				string.find(v:GetClass(), "sent") or
+				string.find(v:GetClass(), "print")
 			then
 				halo.Add({v}, Color(0,255,0), 1, 1, 5, true, true)
+				draw.DrawText(v:GetClass(), "Trebuchet19", v:GetPos():ToScreen().x, v:GetPos():ToScreen().y, Color(0,255,0,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 			end
 		end
 	end
