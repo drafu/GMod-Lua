@@ -111,9 +111,8 @@ hook.Add("HUDPaint", "DHackGlow", function()
 				string.find(v:GetClass(), "money") or
 				string.find(v:GetClass(), "spawned") or 
 				string.find(v:GetClass(), "microwave") or
-				v:GetModel() == "models/props/cs_assault/money.mdl" or
-				string.find(v:GetClass(), "darkrp_") or 
-				string.find(v:GetClass(), "sent_")
+				string.find(v:GetClass(), "darkrp") or 
+				string.find(v:GetClass(), "sent")
 			then
 				halo.Add({v}, Color(0,255,0), 1, 1, 5, true, true)
 			end
