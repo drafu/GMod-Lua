@@ -1,8 +1,7 @@
 -- Thanks to Ubi, Schwarz, LRED and GOBJIuH for help --
 -- Made by Drafu --
 
-include("vec2.lua")
--- Easier target finding. WIP
+include("vec2.lua") -- Easier target finding. WIP
 
 local ply = LocalPlayer()
 local DHack = {}
@@ -23,7 +22,7 @@ local I = 0
 table.sort(DHack.GetAll, function(a,b)
 	a, b = a or b, b or a
 	local a_pos, b_pos = a:GetPos():ToScreen(), b:GetPos():ToScreen()
-	return (scrw_center - a_pos.x)^2 + (scrh_center - a_pos.y)^2 < (scrw_center - b_pos.x)^2 + (scrh_center - b_pos.y)^2
+	return math.sqrt((scrw_center - a_pos.x)^2 + (scrh_center - a_pos.y)^2) < math.sqrt((scrw_center - b_pos.x)^2 + (scrh_center - b_pos.y)^2)
 end)
 
 local function IsValidModel(ent)
