@@ -2,6 +2,7 @@
 -- Made by Drafu --
 
 include("vec2.lua")
+-- Easier target finding. WIP
 
 local ply = LocalPlayer()
 local DHack = {}
