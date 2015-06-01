@@ -9,36 +9,31 @@ DHack.Bone = {}
 DHack.Bone.Head = "ValveBiped.Bip01_Head1"
 local scrw_center = ScrW()/2
 local scrh_center = ScrH()/2
+local vec2_screen = vec2(scrw_center, scrh_center)
+
 DHack.GetAll = {}
+
+render.SetBlend(0.2)
 
 surface.CreateFont("Trebuchet19", {font="TabLarge", size=12, weight=600})
 
-for _, o in pairs(player.GetAll()) do 
-   if o == ply then continue end
-   DHack.GetAll[_] = o
-end
-
-local I = 0
-table.sort(DHack.GetAll, function(a,b)
-	a, b = a or b, b or a
-	local a_pos, b_pos = a:GetPos():ToScreen(), b:GetPos():ToScreen()
-	return math.sqrt((scrw_center - a_pos.x)^2 + (scrh_center - a_pos.y)^2) < math.sqrt((scrw_center - b_pos.x)^2 + (scrh_center - b_pos.y)^2)
+hook.Add("Think", "DHackGetAllUpdate", function()
+	for _, o in pairs(player.GetAll()) do 
+	   if o == ply then continue end
+	   DHack.GetAll[_] = o
+	
+	table.sort(DHack.GetAll, function(a,b)
+		a, b = a or b, b or a
+		local vec2_apos = vec2(a:GetPos():ToScreen().x, a:GetPos():ToScreen().y)
+		local vec2_bpos = vec2(b:GetPos():ToScreen().x, b:GetPos():ToScreen().y)
+		return vec2_apos - vec2_screen < vec2_bpos - vec2_screen end)
 end)
-
-local function IsValidModel(ent)
-	if(ent:LookupBone(DHack.Bone.Head) ~= nil and ent:GetBonePosition(ent:LookupBone(DHack.Bone.Head)) ~= nil) then return true
-	else return false end
-end
-
+	
 local function IsVisible(ent)
 	local tracer = {}
 	if(ply:GetShootPos() ~= nil and IsValid(ent)) then
 		tracer.start = ply:GetShootPos()
-		if IsValidModel(ent) then
-			tracer.endpos = ent:GetBonePosition(ent:LookupBone(DHack.Bone.Head))
-		else
-			tracer.endpos = ent:GetPos()
-		end
+		tracer.endpos = ent:GetBonePosition(ent:LookupBone(DHack.Bone.Head))
 		tracer.filter = { ply, ent }
 		tracer.mask = MASK_SHOT
 		local trace = util.TraceLine( tracer )
@@ -48,16 +43,12 @@ local function IsVisible(ent)
 end
 
 hook.Add("Move", "DHackAim", function()
-	if(ply:KeyDown(IN_ALT2)) then
-		for k,v in pairs(DHack.GetAll) do
+	if ply:KeyDown(IN_ATTACK2) then
+		for k,v in pairs(DHack.GetAll) do	
 			if(IsVisible(v)) then
-				if(IsValidModel(v)) then
-					local head = v:LookupBone(DHack.Bone.Head)
-					local headpos,targetheadang = v:GetBonePosition(head)
-					ply:SetEyeAngles((headpos + ((v:GetVelocity() * 0.00672724)-(ply:GetVelocity()*0.0087775)) - ply:GetShootPos()):Angle())
-				else
-					ply:SetEyeAngles((v:GetPos() + Vector(0,0,50) - ply:GetShootPos()):Angle())
-				end
+				local head = v:LookupBone(DHack.Bone.Head)
+				local headpos,targetheadang = v:GetBonePosition(head)
+				ply:SetEyeAngles((headpos - ply:GetShootPos()):Angle()) -- We still need a good velocity fix
 			end
 		end
 	end
@@ -79,16 +70,6 @@ hook.Add("HUDPaint", "DHackESP", function()
 	end
 end)
 
---[[ DOES THIS PART NEED A HOOK OR JUST FINE ONCE? ]]--
-hook.Add("RenderScreenspaceEffects", "DHackChams", function()
-	for k,v in pairs(DHack.GetAll) do
-			cam.Start3D(EyePos(), EyeAngles())
-				render.SetBlend( 0.2 )
-			cam.End3D()
-	end
-end)
---[[ ############################################# ]]--
-
 hook.Add("HUDPaint", "DHackGlow", function()
 		
 	for k,v in pairs(DHack.GetAll) do
@@ -100,8 +81,9 @@ hook.Add("HUDPaint", "DHackGlow", function()
 	for k,v in pairs(ents.GetAll()) do
 		if v:GetPos():Distance(ply:GetPos()) < 16000 then
 			if
-				string.find(v:GetClass(), "weapon") or 
-				string.find(v:GetClass(), "gun")
+				string.find(v:GetClass(), "weapon") or
+				string.find(v:GetClass(), "gun") and 
+				not string.find(v:GetClass(), "phys")
 			then
 				halo.Add({v}, Color(255,0,0), 1, 1, 5, true, true)
 			end
